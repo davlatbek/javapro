@@ -28,12 +28,17 @@ public class MyTests {
         assert box.volume() == 6000 : "testSquareFunc не работает корректно";
     }
 
-    @Test(priority = 0)
+    @Test(priority = 3)
+    public void testVolumeFunc2() {
+        assert box.volume() == 6000 : "testSquareFunc не работает корректно";
+    }
+
+    @Test(priority = 1)
     public void testSquareFunc() {
         assert box.square() == 2200 : "testSquareFunc не работает корректно";
     }
 
-    @Test
+    @Test()
     public void testPerimeterFunc() {
         assert box.perimeter() == 240 : "testSquareFunc не работает корректно";
     }

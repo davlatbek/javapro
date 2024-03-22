@@ -7,7 +7,9 @@ import ru.innotech.javapro.hw1.tests.MyTests;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class TestRunner {
 
@@ -37,12 +39,15 @@ public class TestRunner {
     }
 
     private static void runTestMethods(Object myTestsObject) throws IllegalAccessException, InvocationTargetException {
-        HashMap<Integer, Method> methodToPriorityMap = getMethodToPriorityMap(myTestsObject.getClass());
+
+        HashMap<Integer, List<Method>> priorityToListOfMethodsMap = getMethodToPriorityMap(myTestsObject.getClass());
         for (int i = 0; i <= 10; i++) {
-            if (methodToPriorityMap.containsKey(i)) {
-                System.out.println("-Запуск теста " + methodToPriorityMap.get(i).getName());
-                methodToPriorityMap.get(i).invoke(myTestsObject, null);
-                System.out.println("-Конец теста " + methodToPriorityMap.get(i).getName());
+            if (priorityToListOfMethodsMap.containsKey(i)) {
+                for (Method method : priorityToListOfMethodsMap.get(i)) {
+                    System.out.println("-Запуск теста " + method.getName());
+                    method.invoke(myTestsObject, null);
+                    System.out.println("-Конец теста " + method.getName());
+                }
             }
         }
     }
@@ -61,17 +66,19 @@ public class TestRunner {
         }
     }
 
-    private static HashMap<Integer, Method> getMethodToPriorityMap(Class c) {
-        HashMap<Integer, Method> priorities = new HashMap<>();
+    private static HashMap<Integer, List<Method>> getMethodToPriorityMap(Class c) {
+        HashMap<Integer, List<Method>> priorities = new HashMap<>();
         Method[] methods = c.getDeclaredMethods();
         for (Method method : methods) {
             if (method.isAnnotationPresent(Test.class)) {
                 Test testAnnotation = method.getAnnotation(Test.class);
                 int priority = testAnnotation.priority();
-                if (priority > 10) {
-                    throw new IllegalArgumentException("Приоритет теста не может быть больше 10");
+                if (priority < 1 || priority > 10) {
+                    throw new IllegalArgumentException("Приоритет теста не может быть больше 10 или меньше 1");
                 }
-                priorities.put(priority, method);
+                priorities.computeIfAbsent(priority, k -> new ArrayList<>());
+                priorities.get(priority).add(method);
+
             }
         }
         return priorities;
